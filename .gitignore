@@ -1,6 +1,11 @@
 # Prerequisites
 *.d
 
+/input
+gaussJacobi-serial-csr
+gaussJacobi-serial-csc
+out*.txt
+
 # Object files
 *.o
 *.ko
