@@ -14,7 +14,7 @@ import(
 // diff is a simple go file to find mathematical differences between two files
 // file names are passed as command line arguments
 // each line should be a number
-var e = flag.Float64("e", 0.00001, "ignore differences smaller than epsilon")
+var e = flag.Float64("e", 0.000_000_000_1, "ignore differences smaller than epsilon")
 
 
 func main() {
@@ -82,7 +82,7 @@ func main() {
 
 	color.Set(color.FgGreen, color.Bold)
 	if diffCount == 0 {
-		fmt.Printf("No differences found between %s and %s that is larger than %f\n", os.Args[1], os.Args[2], *e)
+		fmt.Printf("No differences found between %s and %s that is larger than %.10f\n", os.Args[1], os.Args[2], *e)
 	}
 
 	// check for errors

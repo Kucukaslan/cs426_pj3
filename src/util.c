@@ -4,71 +4,6 @@
 #include <stdlib.h>
 #include <stdint.h> // for int32_t
 
-// TODO: refactor function to use float weights
-
-int read_file(char *file_name, int *numVertices, int *numEdges, int **offsets)
-{
-	printf("Reading the file...\n");
-	FILE *inputFile = fopen(file_name, "r");
-	if (inputFile)
-	{
-		int success;
-
-		success = fscanf(inputFile, "%d", &*numVertices);
-		if (!success)
-		{
-			printf("Bad File format!\n");
-			return 0;
-		}
-		success = fscanf(inputFile, "%d", &*numEdges);
-		if (!success)
-		{
-			printf("Bad File format!\n");
-			return 0;
-		}
-
-		// topologicalSize includes the edge weights
-		int topologicalSize = (*numVertices + 1 + (*numEdges * 2)) * sizeof(int);
-
-		printf("numVertices = %d, numEdges = %d\n", *numVertices, *numEdges);
-
-		printf("Graph data footprint=%.3f KB ~ %.3f MB ~ %.3f GB\n", topologicalSize / 1024.0, topologicalSize / (1024.0 * 1024), topologicalSize / (1024.0 * 1024 * 1024));
-
-		*offsets = (int *)malloc(topologicalSize);
-
-		for (int i = 0; i < (*numVertices + 1 + (*numEdges) * 2); i++)
-		{
-			success = fscanf(inputFile, "%d", &((*offsets)[i]));
-			if (success == EOF || success == 0)
-			{
-				printf("Bad File format!\n");
-				return 0;
-			}
-		}
-		fclose(inputFile);
-		return 1;
-	}
-	printf("Could not open the file!\n");
-	return 0;
-}
-
-void printResults(char *fileName, int *distances, int numVertices)
-{
-	FILE *inputFile = fopen(fileName, "w");
-	if (inputFile)
-	{
-		// Output the final values
-		for (int i = 0; i < numVertices; i++)
-		{
-			fprintf(inputFile, "%d\n", (int32_t)distances[i]);
-		}
-	}
-	else
-	{
-		printf("Could not open the file!\n");
-	}
-}
-
 // @Kucukaslan's additions
 
 // read_vector function
@@ -76,7 +11,7 @@ void printResults(char *fileName, int *distances, int numVertices)
 // returns 1 if successful, 0 otherwise
 // the vector is stored in the vector parameter
 
-int read_vector(char *filename, int *numVertices, float **vector)
+int read_vector(char *filename, int *numVertices, double **vector)
 {
 	FILE *file = fopen(filename, "r");
 	if (file == NULL)
@@ -89,13 +24,13 @@ int read_vector(char *filename, int *numVertices, float **vector)
 		fscanf(file, "%d", numVertices);
 		printf("numVertices = %d\n", *numVertices);
 		// allocate memory for the vector
-		*vector = (float *)malloc(*numVertices * sizeof(float));
+		*vector = (double *)malloc(*numVertices * sizeof(double));
 		printf("reading the vector of %d elements\n", *numVertices);
 
 		for (int i = 0; i < *numVertices; i++)
 		{
-			fscanf(file, "%f", &((*vector)[i]));
-			// printf("%f\n", (*vector)[i]);
+			fscanf(file, "%lf", &((*vector)[i]));
+			// printf("%3.20lf\n", (*vector)[i]);
 		}
 		fclose(file);
 		return 1;
@@ -103,11 +38,11 @@ int read_vector(char *filename, int *numVertices, float **vector)
 }
 
 /*
- * reads a matrix of floating numbers in CSR format, each integer number separated by line,
+ * reads a matrix of doubleing numbers in CSR format, each integer number separated by line,
  * first line defines the number of rows (n), the next lines is Number of Non-Zero (nnz) elements,
  * next n+1 lines define the offsets array, the next nnz lines define the corresponding edges, and next nnz weights array,
  */
-int read_matrix_csr(char *filename, int *numRows, int *numEdges, int **offsets, int **edges, float **weights)
+int read_matrix(char *filename, int *numRows, int *numEdges, int **offsets, int **edges, double **weights)
 {
 	FILE *file = fopen(filename, "r");
 	if (file == NULL)
@@ -123,7 +58,7 @@ int read_matrix_csr(char *filename, int *numRows, int *numEdges, int **offsets, 
 		// allocate memory for the vector
 		*offsets = (int *)malloc((*numRows + 1) * sizeof(int));
 		*edges = (int *)malloc((*numEdges) * sizeof(int));
-		*weights = (float *)malloc((*numEdges) * sizeof(float));
+		*weights = (double *)malloc((*numEdges) * sizeof(double));
 
 		for (int i = 0; i < *numRows + 1; i++)
 		{
@@ -137,8 +72,8 @@ int read_matrix_csr(char *filename, int *numRows, int *numEdges, int **offsets, 
 		}
 		for (int i = 0; i < *numEdges; i++)
 		{
-			fscanf(file, "%f", &((*weights)[i]));
-			// printf("%f %d/%d\n", (*weights)[i], i, *numEdges);
+			fscanf(file, "%lf", &((*weights)[i]));
+			// printf("%3.20lf %d/%d\n", (*weights)[i], i, *numEdges);
 		}
 
 		fclose(file);
@@ -148,7 +83,7 @@ int read_matrix_csr(char *filename, int *numRows, int *numEdges, int **offsets, 
 
 // writes a vector to a file
 // returns 1 if successful, 0 otherwise
-int write_vector(char *filename, int numVertices, float *vector)
+int write_vector(char *filename, int numVertices, double *vector)
 {
 	FILE *file = fopen(filename, "w");
 	if (file == NULL)
@@ -162,7 +97,7 @@ int write_vector(char *filename, int numVertices, float *vector)
 		// write the vector
 		for (int i = 0; i < numVertices; i++)
 		{
-			fprintf(file, "%f\n", vector[i]);
+			fprintf(file, "%3.20lf\n", vector[i]);
 		}
 		fclose(file);
 		return 1;

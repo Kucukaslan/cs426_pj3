@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
 
     // read the input file
     int numVertices, numEdges, *offsets, *columns;
-    float *weights;
-    int success = read_matrix_csr(argv[1], &numVertices, &numEdges, &offsets, &columns, &weights);
+    double *weights;
+    int success = read_matrix(argv[1], &numVertices, &numEdges, &offsets, &columns, &weights);
     if (!success)
     {
         printf("Error reading file %s\n", argv[1]);
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 
     //     for (int i = 0; i < numEdges; i++)
     //     {
-    //         printf("%10f ", weights[i]);
+    //         printf("%3.20lf ", weights[i]);
     //     }
     //     printf("\n");
     // }
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     //         {
     //             if (columns[k] == j)
     //             {
-    //                 printf("%10f ", weights[k]);
+    //                 printf("%3.20lf ", weights[k]);
     //                 found = true;
     //                 break;
     //             }
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     // read the vector b from the input file
     printf("Reading the vector b...\n");
     int numVerticesB;
-    float *b;
+    double *b;
     success = read_vector(argv[2], &numVerticesB, &b);
     if (!success)
     {
@@ -101,14 +101,14 @@ int main(int argc, char *argv[])
         // printf("b:\n");
         // for (int i = 0; i < numVertices; i++)
         // {
-        //     printf("%3f ", b[i]);
+        //     printf("%3.20lf ", b[i]);
         // }
         // printf("\n");
     }
 
     // allocate memory for the vector x
-    float *x = (float *)malloc(numVertices * sizeof(float));
-    float *x_new = (float *)malloc(numVertices * sizeof(float));
+    double *x = (double *)malloc(numVertices * sizeof(double));
+    double *x_new = (double *)malloc(numVertices * sizeof(double));
 
     // Xold = X // Initial solution vector (n x 1 vector filled with 0 values)
     for (int i = 0; i < numVertices; i++)
@@ -117,9 +117,9 @@ int main(int argc, char *argv[])
     }
 
     // apply the Gauss-Jacobi algorithm
-    float error = INT_MAX;
+    double error = INT_MAX;
     int iteration = 0;
-    while (error > EPSILON_e5)
+    while (error > EPSILON)
     {
         for (int i = 0; i < numVertices; i++)
         {
@@ -150,12 +150,12 @@ int main(int argc, char *argv[])
 
         if (iteration % 100 == 0)
         {
-            printf("Iteration %d: error = %f\n", iteration, error);
+            printf("Iteration %d: error = %3.20lf\n", iteration, error);
         }
         // printf("x:\n");
         // for (int i = 0; i < numVertices; i++)
         // {
-        //     printf("%3f ", x[i]);
+        //     printf("%3.20lf ", x[i]);
         // }
         // printf("\n------------------\n");
         iteration++;
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
     // printf("x:\n");
     // for (int i = 0; i < numVertices; i++)
     // {
-    //     printf("%3f ", x[i]);
+    //     printf("%3.20lf ", x[i]);
     // }
     // printf("\n");
 
