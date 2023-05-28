@@ -90,12 +90,12 @@ int read_vector(char *filename, int *numVertices, float **vector)
 		printf("numVertices = %d\n", *numVertices);
 		// allocate memory for the vector
 		*vector = (float *)malloc(*numVertices * sizeof(float));
-		printf("initailized vector\n");
+		printf("reading the vector of %d elements\n", *numVertices);
 
 		for (int i = 0; i < *numVertices; i++)
 		{
 			fscanf(file, "%f", &((*vector)[i]));
-			printf("%f\n", (*vector)[i]);
+			// printf("%f\n", (*vector)[i]);
 		}
 		fclose(file);
 		return 1;
@@ -123,22 +123,22 @@ int read_matrix_csr(char *filename, int *numRows, int *numEdges, int **offsets, 
 		// allocate memory for the vector
 		*offsets = (int *)malloc((*numRows + 1) * sizeof(int));
 		*edges = (int *)malloc((*numEdges) * sizeof(int));
-		*weights = (float *)malloc((*numRows) * sizeof(float));
+		*weights = (float *)malloc((*numEdges) * sizeof(float));
 
 		for (int i = 0; i < *numRows + 1; i++)
 		{
 			fscanf(file, "%d", &((*offsets)[i]));
-			printf("%d\n", (*offsets)[i]);
+			// printf("%d\n", (*offsets)[i]);
 		}
 		for (int i = 0; i < *numEdges; i++)
 		{
 			fscanf(file, "%d", &((*edges)[i]));
-			printf("%d\n", (*edges)[i]);
+			// printf("%d\n", (*edges)[i]);
 		}
 		for (int i = 0; i < *numEdges; i++)
 		{
 			fscanf(file, "%f", &((*weights)[i]));
-			printf("%f\n", (*weights)[i]);
+			// printf("%f %d/%d\n", (*weights)[i], i, *numEdges);
 		}
 
 		fclose(file);
