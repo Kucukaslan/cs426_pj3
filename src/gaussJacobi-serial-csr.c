@@ -20,13 +20,12 @@ int main(int argc, char *argv[])
     }
 
     // offsets is the rows
-    // edges is the columns
     // why did they named it like that? To confuse us?
 
     // read the input file
-    int numVertices, numEdges, *offsets, *edges;
+    int numVertices, numEdges, *offsets, *columns;
     float *weights;
-    int success = read_matrix_csr(argv[1], &numVertices, &numEdges, &offsets, &edges, &weights);
+    int success = read_matrix_csr(argv[1], &numVertices, &numEdges, &offsets, &columns, &weights);
     if (!success)
     {
         printf("Error reading file %s\n", argv[1]);
@@ -50,7 +49,7 @@ int main(int argc, char *argv[])
 
     //     for (int i = 0; i < numEdges; i++)
     //     {
-    //         printf("%10d ", edges[i]);
+    //         printf("%10d ", columns[i]);
     //     }
     //     printf("\n");
 
@@ -70,7 +69,7 @@ int main(int argc, char *argv[])
     //         bool found = false;
     //         for (int k = offsets[i]; k < offsets[i + 1]; k++)
     //         {
-    //             if (edges[k] == j)
+    //             if (columns[k] == j)
     //             {
     //                 printf("%10f ", weights[k]);
     //                 found = true;
@@ -131,7 +130,7 @@ int main(int argc, char *argv[])
         {
             for (int j = offsets[i]; j < offsets[i + 1]; j++)
             {
-                x_new[i] += weights[j] * x[edges[j]];
+                x_new[i] += weights[j] * x[columns[j]];
             }
             x_new[i] += b[i];
         }
@@ -149,7 +148,10 @@ int main(int argc, char *argv[])
             x[i] = x_new[i];
         }
 
-        // printf("Iteration %d: error = %f\n", iteration, error);
+        if (iteration % 100 == 0)
+        {
+            printf("Iteration %d: error = %f\n", iteration, error);
+        }
         // printf("x:\n");
         // for (int i = 0; i < numVertices; i++)
         // {
@@ -160,12 +162,12 @@ int main(int argc, char *argv[])
     }
 
     // print the vector x
-    printf("x:\n");
-    for (int i = 0; i < numVertices; i++)
-    {
-        printf("%3f ", x[i]);
-    }
-    printf("\n");
+    // printf("x:\n");
+    // for (int i = 0; i < numVertices; i++)
+    // {
+    //     printf("%3f ", x[i]);
+    // }
+    // printf("\n");
 
     // write the vector x to the output file
     printf("Writing the vector x to the output file %s...\n", argv[3]);
