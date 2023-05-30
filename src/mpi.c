@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
             // printf("\n");
         }
 
-        // // print the matrix A'
+        // print the matrix A'
         // printf("A':\n");
         // for (int i = 0; i < numVertices; i++)
         // {
@@ -119,6 +119,31 @@ int main(int argc, char *argv[])
         //     printf("\n");
         // }
         // printf("\n");
+        // now print it to a file A.txt
+        // FILE *fp;
+        // fp = fopen("A.txt", "w");
+
+        // for (int i = 0; i < numVertices; i++)
+        // {
+        //     for (int j = 0; j < numVertices; j++)
+        //     {
+        //         bool found = false;
+        //         for (int k = offsets[i]; k < offsets[i + 1]; k++)
+        //         {
+        //             if (columns[k] == j)
+        //             {
+        //                 fprintf(fp, "%30.20lf ", weights[k]);
+        //                 found = true;
+        //                 break;
+        //             }
+        //         }
+        //         if (!found)
+        //         {
+        //             fprintf(fp, "%30d ", 0);
+        //         }
+        //     }
+        //     fprintf(fp, "\n");
+        // }
 
         // read the vector b from the input file
         printf("Reading the vector b...\n");
@@ -203,7 +228,7 @@ int main(int argc, char *argv[])
     printf("%d: I received %d offsets starting from %d\n", rank, offset_sendcounts[rank], offset_displs[rank]);
     if (offset_sendcounts[rank] > 0)
     {
-        printf("%d: offsets_local[0] = %d\n", rank, offsets_local[0]);
+        // printf("%d: offsets_local[0] = %d\n", rank, offsets_local[0]);
     }
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -227,7 +252,7 @@ int main(int argc, char *argv[])
 
     MPI_Barrier(MPI_COMM_WORLD);
 
-    printf("%d: b_local[0] = %3.20lf\n", rank, b_local[0]);
+    // printf("%d: b_local[0] = %3.20lf\n", rank, b_local[0]);
     MPI_Barrier(MPI_COMM_WORLD);
 
     // ############ EVERTHING ABOVE IS CORRECT ############
@@ -252,6 +277,7 @@ int main(int argc, char *argv[])
         {
             x_new[i] = 0;
         }
+
         // multiply Ai with x and store the result in x_new
         int l, u;
         // for each row assigned to the process
@@ -264,19 +290,25 @@ int main(int argc, char *argv[])
             // printf("%d: row %d has offsets %d, %d\n", rank, i, l, u);
             for (int j = l; j < u; j++)
             {
-                x_new[i + row_displs] += weights_local[j - l] * x[columns_local[j - l]];
+                x_new[i + row_displs] += weights_local[j - offsets_local[0]] * x[columns_local[j - offsets_local[0]]];
                 // printf("%d:%d x_new[%d] += %3.20lf * x[%d](%3.20lf) = %3.20lf\n", rank, iteration, i + row_displs, weights_local[j - l], columns_local[j - l], x[columns_local[j - l]], x_new[i + row_displs]);
                 // x_new[i] += weights_local[j] * x[columns_local[j]];
             }
+            // printf("%d:%d x_new[%d] =  %3.20lf\n", rank, iteration, i + row_displs, x_new[i + row_displs]);
+
             x_new[i + row_displs] += b_local[i];
             // printf("%d:%d x_new[%d] += b_local[%d](%3.20lf) = %3.20lf\n", rank, iteration, i + row_displs, i, b_local[i], x_new[i + row_displs]);
         }
+
         // TODO should we really need to iterate over all the rows?
         error = 0;
         for (int i = 0; i < div; i++)
         {
             error += (x_new[i + row_displs] - x[i + row_displs]) * (x_new[i + row_displs] - x[i + row_displs]);
-            // printf("%d:%d error += (%3.20lf - %3.20lf)^2 = %3.20lf\n", rank, iteration, x_new[i + row_displs], x[i + row_displs], error);
+            // if (x_new[i + row_displs] - x[i + row_displs] > EPSILON)
+            // {
+            //     printf("%d:%d error += (%3.20lf - %3.20lf)^2 = %3.20lf at %d\n", rank, iteration, x_new[i + row_displs], x[i + row_displs], error, i + row_displs);
+            // }
             // error += (x_new[i] - x[i]) * (x_new[i] - x[i]);
             // printf("%d:%d error += (%3.20lf - %3.20lf)^2 = %3.20lf\n", rank, iteration, x_new[i], x[i], error);
         }
@@ -285,10 +317,21 @@ int main(int argc, char *argv[])
         // reduce the error
         MPI_Allreduce(MPI_IN_PLACE, &error, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 
+        if (iteration % 100 == 0)
+        {
+            if (rank == 0)
+            {
+                printf("%d:%d: total error = sqrt(%3.20lf)=%3.20lf\n", rank, iteration, error, sqrt(error));
+            }
+        }
         error = sqrt(error);
 
         // allgather updated portion of x_new
-        MPI_Allgatherv(&x_new[row_displs], b_sendcounts[rank], MPI_DOUBLE, x, b_sendcounts, b_displs, MPI_DOUBLE, MPI_COMM_WORLD);
+        // printf("%d:%d: sending %d elements of x_new starting from x_new[%d] = %3.20lf\n", rank, iteration, b_sendcounts[rank], row_displs, x_new[row_displs]);
+        MPI_Allgather(&x_new[row_displs], b_sendcounts[rank], MPI_DOUBLE, x, b_sendcounts[rank], MPI_DOUBLE, MPI_COMM_WORLD);
+        // printf("%d:%d:address of x_new = %p, x_new[%d]=%p, x_new+%d=%p\n", rank, iteration, x_new, row_displs, &x_new[row_displs], row_displs, x_new + row_displs);
+
+        // printf("%d:%d: recv new x[0]=%3.20lf,\n x[200]=%3.20lf,\n x[400]=%3.20lf,\n x[600]=%3.20lf,\n x[800]=%3.20lf\n", rank, iteration, x[0], x[200], x[400], x[600], x[800]);
 
         // char *x_f = (char *)malloc(100);
         // sprintf(x_f, "./x%d_%d", rank, iteration);
@@ -296,10 +339,7 @@ int main(int argc, char *argv[])
         // sprintf(xn_f, "./xn%d_%d", rank, iteration);
         // write_vector(x_f, numVertices, x);
         // write_vector(xn_f, numVertices, x_new);
-        if (iteration % 100 == 0 && rank == 0)
-        {
-            printf("%d:%d: total error = %3.20lf\n", rank, iteration, error);
-        }
+
         // printf("x:\n");
         // for (int i = 0; i < numVertices; i++)
         // {
@@ -308,10 +348,23 @@ int main(int argc, char *argv[])
         // printf("\n------------------\n");
         iteration++;
 
-        // if (iteration > 3)
+        // if (iteration > 1)
         // {
-        //     MPI_Finalize();
-        //     exit(0);
+        //     break;
+        //     // MPI_Finalize();
+        //     // exit(0);
+        // }
+
+        // TODO DELETE
+        // if (error > 10)
+        // {
+        //     if (rank == 0)
+        //     {
+        //         printf("%d: error = %3.20lf\n", rank, error);
+        //         printf("%d: iteration = %d\n", rank, iteration);
+        //         printf("This is not good early cancellation\n");
+        //     }
+        //     break;
         // }
     }
 

@@ -5,6 +5,7 @@
 gaussJacobi-serial-csr
 gaussJacobi-serial-csc
 out*.txt
+/.vscode
 
 # Object files
 *.o
