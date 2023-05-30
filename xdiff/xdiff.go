@@ -1,20 +1,19 @@
 package main
 
-import(
+import (
+	"bufio"
+	"flag"
 	"fmt"
 	"os"
-	"bufio"
 	"strconv"
-	"flag"
 
 	"github.com/fatih/color"
-
 )
 
-// diff is a simple go file to find mathematical differences between two files
+// diff is a simple go file to find numerical differences between two files
 // file names are passed as command line arguments
 // each line should be a number
-var e = flag.Float64("e", 0.000_000_000_1, "ignore differences smaller than epsilon")
+var e = flag.Float64("e", 0.000_000_000_1, "\"epsilon\" threshold for differences")
 
 
 func main() {
@@ -31,7 +30,7 @@ func main() {
 
 	// check for the correct number of arguments
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: xdiff file1 file2")
+		fmt.Println("Usage: xdiff file1 file2 [flags]")
 		os.Exit(1)
 	}
 
@@ -58,12 +57,19 @@ func main() {
 	scanner2 := bufio.NewScanner(file2)
 
 	color.Set(color.FgRed, color.Bold)
+	defer color.Unset() // Don't forget to unset
+
 	// loop through the files
 	diffCount := 0
 	for scanner1.Scan() && scanner2.Scan() {
 		// convert the text to numbers
 		num1, err := strconv.ParseFloat(scanner1.Text(), 64)
 		if err != nil {
+			color.Unset()
+			fmt.Printf("xdiff is strictly for numerical comparisons but the given "+
+			"file contains non-numerical content such as %q\n", scanner1.Text())
+			color.Set(color.FgRed, color.Bold)
+
 			fmt.Println("Error: ", err)
 			os.Exit(1)
 		}
@@ -95,6 +101,4 @@ func main() {
 		fmt.Println("Error: ", scanner2.Err())
 		os.Exit(1)
 	}
-	color.Unset() // Don't forget to unset
-
 }

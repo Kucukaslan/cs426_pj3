@@ -7,11 +7,17 @@
 #include "util.h"
 #include <stdbool.h>
 #include <math.h>
+#include <time.h>
 
 // an example call is
 // %my_program input_matrix_A input_matrix_b output_matrix_X
 int main(int argc, char *argv[])
 {
+    // start the  monotonic timer
+    struct timespec start, finish;
+    double elapsed;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     // check if the number of arguments is correct
     if (argc != 4)
     {
@@ -31,59 +37,6 @@ int main(int argc, char *argv[])
         printf("Error reading file %s\n", argv[1]);
         return 1;
     }
-    // else
-    // {
-    //     // print the matrix A
-    //     printf("With csr notation:\n");
-    //     for (int i = 0; i < numVertices; i++)
-    //     {
-    //         printf("%10d ", i);
-    //     }
-    //     printf("\n");
-
-    //     for (int i = 0; i < numVertices + 1; i++)
-    //     {
-    //         printf("%10d ", offsets[i]);
-    //     }
-    //     printf("\n");
-
-    //     for (int i = 0; i < numEdges; i++)
-    //     {
-    //         printf("%10d ", columns[i]);
-    //     }
-    //     printf("\n");
-
-    //     for (int i = 0; i < numEdges; i++)
-    //     {
-    //         printf("%3.20lf ", weights[i]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // // print the matrix A'
-    // printf("A':\n");
-    // for (int i = 0; i < numVertices; i++)
-    // {
-    //     for (int j = 0; j < numVertices; j++)
-    //     {
-    //         bool found = false;
-    //         for (int k = offsets[i]; k < offsets[i + 1]; k++)
-    //         {
-    //             if (columns[k] == j)
-    //             {
-    //                 printf("%3.20lf ", weights[k]);
-    //                 found = true;
-    //                 break;
-    //             }
-    //         }
-    //         if (!found)
-    //         {
-    //             printf("%10d ", 0);
-    //         }
-    //     }
-    //     printf("\n");
-    // }
-    // printf("\n");
 
     // read the vector b from the input file
     printf("Reading the vector b...\n");
@@ -152,22 +105,9 @@ int main(int argc, char *argv[])
         {
             printf("Iteration %d: error = %3.20lf\n", iteration, error);
         }
-        // printf("x:\n");
-        // for (int i = 0; i < numVertices; i++)
-        // {
-        //     printf("%3.20lf ", x[i]);
-        // }
-        // printf("\n------------------\n");
+
         iteration++;
     }
-
-    // print the vector x
-    // printf("x:\n");
-    // for (int i = 0; i < numVertices; i++)
-    // {
-    //     printf("%3.20lf ", x[i]);
-    // }
-    // printf("\n");
 
     // write the vector x to the output file
     printf("Writing the vector x to the output file %s...\n", argv[3]);
@@ -177,4 +117,11 @@ int main(int argc, char *argv[])
         printf("Error writing file %s\n", argv[3]);
         return 1;
     }
+
+    // end the timer
+    clock_gettime(CLOCK_MONOTONIC, &finish);
+    elapsed = (finish.tv_sec - start.tv_sec);
+    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+    // print the elapsed with nanoseconds precision
+    printf("Elapsed time: %.9lf seconds\n", elapsed);
 }

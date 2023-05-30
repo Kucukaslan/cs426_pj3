@@ -22,7 +22,7 @@ int read_vector(char *filename, int *numVertices, double **vector)
 	{
 		// read the number of vertices
 		fscanf(file, "%d", numVertices);
-		printf("numVertices = %d\n", *numVertices);
+		// printf("numVertices = %d\n", *numVertices);
 		// allocate memory for the vector
 		*vector = (double *)malloc(*numVertices * sizeof(double));
 		printf("reading the vector of %d elements\n", *numVertices);
@@ -33,6 +33,7 @@ int read_vector(char *filename, int *numVertices, double **vector)
 			// printf("%3.20lf\n", (*vector)[i]);
 		}
 		fclose(file);
+		printf("vector read successfully\n");
 		return 1;
 	}
 }
