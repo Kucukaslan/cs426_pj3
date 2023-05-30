@@ -4,6 +4,8 @@
 /input
 gaussJacobi-serial-csr
 gaussJacobi-serial-csc
+gaussJacobi-mpi-p1
+gaussJacobi-mpi-p2
 out*.txt
 /.vscode
 

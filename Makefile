@@ -1,4 +1,5 @@
 all: csc
+all: mpi2
 
 csr:
 	@gcc -o gaussJacobi-serial-csr src/util.h src/util.c  src/gaussJacobi-serial-csr.c -lm
