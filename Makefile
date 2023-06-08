@@ -85,6 +85,6 @@ c: clear
 z: zip
 
 zip:
-	@zip -r ../muhammed_can_kucukaslan.zip muhammed_can_kucukaslan_cs426_pj3.pdf Makefile src/ xdiff/ \
+	@zip -r ../muhammed_can_kucukaslan_p3.zip muhammed_can_kucukaslan_cs426_pj3.pdf Makefile src/ xdiff/ \
 		input/1000_* outcsr1000.txt outcsc1000.txt outmpi1_1000.txt outmpi2_1000.txt \
 		csr_out.txt csc_out.txt mpi1_out.txt mpi2_out.txt \

@@ -20,37 +20,35 @@ func main() {
 	// define epsilon flag to ignore small differences
 	flag.Usage =  func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "Usage of %s:\n", os.Args[0])
-		fmt.Print("xdiff file1 file2 [flags]\n")
+		fmt.Print("xdiff [flags] file1 file2\n")
 		flag.PrintDefaults()
 	}
 		
 	flag.Parse()
 
-	
-
+	fname1 := flag.Arg(0)
+	fname2 := flag.Arg(1)
 	// check for the correct number of arguments
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: xdiff file1 file2 [flags]")
+		fmt.Println("Usage: xdiff [flags] file1 file2")
 		os.Exit(1)
 	}
 
 	// open the first file
-	file1, err := os.Open(os.Args[1])
+	file1, err := os.Open(fname1)
+	defer file1.Close()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		os.Exit(1)
 	}
 
 	// open the second file
-	file2, err := os.Open(os.Args[2])
+	file2, err := os.Open(fname2)
+	defer file2.Close()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		os.Exit(1)
 	}
-
-	// close the files when we are done
-	defer file1.Close()
-	defer file2.Close()
 
 	// create a scanner for each file
 	scanner1 := bufio.NewScanner(file1)
